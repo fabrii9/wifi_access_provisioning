@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_unifi_controller_user,unifi controller user,model_wifi_unifi_controller,group_wifi_user,1,0,0,0
+access_unifi_controller_manager,unifi controller manager,model_wifi_unifi_controller,group_wifi_manager,1,1,1,1
+access_unifi_wlan_user,unifi wlan user,model_wifi_unifi_wlan,group_wifi_user,1,0,0,0
+access_unifi_wlan_manager,unifi wlan manager,model_wifi_unifi_wlan,group_wifi_manager,1,1,1,1
+access_mikrotik_router_user,mikrotik router user,model_wifi_mikrotik_router,group_wifi_user,1,0,0,0
+access_mikrotik_router_manager,mikrotik router manager,model_wifi_mikrotik_router,group_wifi_manager,1,1,1,1
+access_access_profile_user,access profile user,model_wifi_access_profile,group_wifi_user,1,0,0,0
+access_access_profile_manager,access profile manager,model_wifi_access_profile,group_wifi_manager,1,1,1,1
+access_access_device_user,access device user,model_wifi_access_device,group_wifi_user,1,1,1,0
+access_access_device_manager,access device manager,model_wifi_access_device,group_wifi_manager,1,1,1,1

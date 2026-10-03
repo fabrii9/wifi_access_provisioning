@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="res.groups.privilege" id="privilege_wifi_access">
+        <field name="name">Acceso WiFi</field>
+        <field name="sequence">50</field>
+        <field name="category_id" ref="base.module_category_services"/>
+    </record>
+
+    <record id="group_wifi_user" model="res.groups">
+        <field name="name">Operador</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="privilege_wifi_access"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Da de alta, baja y verifica dispositivos.</field>
+    </record>
+
+    <record id="group_wifi_manager" model="res.groups">
+        <field name="name">Administrador</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="privilege_wifi_access"/>
+        <field name="implied_ids" eval="[(4, ref('group_wifi_user'))]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        <field name="comment">Además configura controladores, routers y perfiles (incluye credenciales).</field>
+    </record>
+</odoo>

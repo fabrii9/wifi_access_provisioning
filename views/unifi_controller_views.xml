@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_wifi_unifi_controller_list" model="ir.ui.view">
+        <field name="name">wifi.unifi.controller.list</field>
+        <field name="model">wifi.unifi.controller</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="url"/>
+                <field name="site"/>
+                <field name="server_version"/>
+                <field name="last_sync"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wifi_unifi_controller_form" model="ir.ui.view">
+        <field name="name">wifi.unifi.controller.form</field>
+        <field name="model">wifi.unifi.controller</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_test_connection" type="object" string="Probar conexión" class="btn-primary"/>
+                    <button name="action_sync_wlans" type="object" string="Sincronizar redes WiFi"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archivado" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Ej.: UniFi La Salle"/></h1>
+                    </div>
+                    <group>
+                        <group string="Conexión">
+                            <field name="url" placeholder="https://host:8443"/>
+                            <field name="unifi_os"/>
+                            <field name="site"/>
+                            <field name="verify_ssl"/>
+                            <field name="timeout"/>
+                        </group>
+                        <group string="Credenciales">
+                            <field name="username"/>
+                            <field name="password" password="True"/>
+                            <field name="server_version"/>
+                            <field name="last_sync"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Redes WiFi" name="wlans">
+                            <field name="wlan_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="enabled"/>
+                                    <field name="security"/>
+                                    <field name="mac_filter_enabled"/>
+                                    <field name="mac_filter_policy"/>
+                                    <field name="mac_count"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wifi_unifi_controller" model="ir.actions.act_window">
+        <field name="name">Controladores UniFi</field>
+        <field name="res_model">wifi.unifi.controller</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Configure su controlador UniFi</p>
+            <p>Ingrese la URL y un usuario administrador local, pruebe la conexión y sincronice las redes WiFi.</p>
+        </field>
+    </record>
+</odoo>

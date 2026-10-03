@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_wifi_mikrotik_router_list" model="ir.ui.view">
+        <field name="name">wifi.mikrotik.router.list</field>
+        <field name="model">wifi.mikrotik.router</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="host"/>
+                <field name="port"/>
+                <field name="use_ssl"/>
+                <field name="identity"/>
+                <field name="ros_version"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wifi_mikrotik_router_form" model="ir.ui.view">
+        <field name="name">wifi.mikrotik.router.form</field>
+        <field name="model">wifi.mikrotik.router</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_test_connection" type="object" string="Probar conexión" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archivado" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Ej.: MikroTik La Salle"/></h1>
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="use_ssl">
+                        Sin api-ssl el usuario y la contraseña viajan sin cifrar. Úselo solo dentro de una VPN.
+                    </div>
+                    <group>
+                        <group string="Conexión">
+                            <field name="host"/>
+                            <field name="use_ssl"/>
+                            <field name="port"/>
+                            <field name="verify_ssl" invisible="not use_ssl"/>
+                            <field name="timeout"/>
+                        </group>
+                        <group string="Credenciales">
+                            <field name="username"/>
+                            <field name="password" password="True"/>
+                            <field name="identity"/>
+                            <field name="board_name"/>
+                            <field name="ros_version"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wifi_mikrotik_router" model="ir.actions.act_window">
+        <field name="name">Routers MikroTik</field>
+        <field name="res_model">wifi.mikrotik.router</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Configure su router MikroTik</p>
+            <p>Se conecta por la API de RouterOS (8728, o 8729 con api-ssl).</p>
+        </field>
+    </record>
+</odoo>

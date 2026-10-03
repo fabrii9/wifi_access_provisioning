@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_wifi_root" name="Acceso WiFi" sequence="60"
+              groups="wifi_access_provisioning.group_wifi_user"
+              web_icon="wifi_access_provisioning,static/description/icon.png"/>
+
+    <menuitem id="menu_wifi_devices" name="Dispositivos" parent="menu_wifi_root" sequence="10"
+              action="action_wifi_access_device"/>
+
+    <menuitem id="menu_wifi_config" name="Configuración" parent="menu_wifi_root" sequence="90"
+              groups="wifi_access_provisioning.group_wifi_manager"/>
+    <menuitem id="menu_wifi_profiles" name="Perfiles de acceso" parent="menu_wifi_config" sequence="10"
+              action="action_wifi_access_profile"/>
+    <menuitem id="menu_wifi_controllers" name="Controladores UniFi" parent="menu_wifi_config" sequence="20"
+              action="action_wifi_unifi_controller"/>
+    <menuitem id="menu_wifi_routers" name="Routers MikroTik" parent="menu_wifi_config" sequence="30"
+              action="action_wifi_mikrotik_router"/>
+</odoo>

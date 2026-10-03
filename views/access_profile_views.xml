@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_wifi_access_profile_list" model="ir.ui.view">
+        <field name="name">wifi.access.profile.list</field>
+        <field name="model">wifi.access.profile</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="wlan_id"/>
+                <field name="router_id"/>
+                <field name="network"/>
+                <field name="ip_strategy"/>
+                <field name="device_count" string="Dispositivos"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wifi_access_profile_form" model="ir.ui.view">
+        <field name="name">wifi.access.profile.form</field>
+        <field name="model">wifi.access.profile</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_preview_next_ip" type="object" string="Ver próxima IP"/>
+                    <button name="action_import_existing" type="object" string="Importar dispositivos existentes"
+                            confirm="Se leerá la lista blanca de UniFi y las reservas del MikroTik y se crearán en Odoo los dispositivos que falten. No se modifica nada en los equipos. ¿Continuar?"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_devices" type="object" class="oe_stat_button" icon="fa-wifi">
+                            <field name="device_count" widget="statinfo" string="Dispositivos"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivado" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Ej.: Personal La Salle"/></h1>
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not wlan_id or (wlan_filter_enabled and wlan_policy == 'allow')">
+                        La red WiFi elegida no tiene el filtro MAC activo en modo lista blanca:
+                        agregar MACs no restringirá el acceso.
+                    </div>
+                    <group>
+                        <group string="UniFi">
+                            <field name="controller_id"/>
+                            <field name="wlan_id" options="{'no_create': True}"/>
+                            <field name="wlan_policy" invisible="not wlan_id"/>
+                            <field name="wlan_filter_enabled" invisible="not wlan_id"/>
+                        </group>
+                        <group string="MikroTik">
+                            <field name="router_id"/>
+                            <field name="dhcp_server" placeholder="(todos)"/>
+                            <field name="comment_template"/>
+                        </group>
+                        <group string="Asignación de IP">
+                            <field name="network"/>
+                            <field name="range_start" placeholder="(inicio de la red)"/>
+                            <field name="range_end" placeholder="(fin de la red)"/>
+                            <field name="excluded_ips"/>
+                            <field name="ip_strategy"/>
+                        </group>
+                        <group string="Colas y automatización">
+                            <field name="create_queue"/>
+                            <field name="queue_max_limit" invisible="not create_queue"/>
+                            <field name="remove_queue"/>
+                            <field name="auto_retry"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wifi_access_profile" model="ir.actions.act_window">
+        <field name="name">Perfiles de acceso</field>
+        <field name="res_model">wifi.access.profile</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Cree un perfil de acceso</p>
+            <p>Un perfil une una red WiFi de UniFi con un router MikroTik y la red donde se asignan las IPs fijas.</p>
+        </field>
+    </record>
+</odoo>

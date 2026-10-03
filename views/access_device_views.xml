@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_wifi_access_device_list" model="ir.ui.view">
+        <field name="name">wifi.access.device.list</field>
+        <field name="model">wifi.access.device</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="state == 'error'" decoration-muted="state == 'removed'"
+                  decoration-info="state == 'draft'">
+                <header>
+                    <button name="action_provision" type="object" string="Dar de alta"/>
+                    <button name="action_check" type="object" string="Verificar"/>
+                    <button name="action_deprovision" type="object" string="Dar de baja"
+                            confirm="Se quitarán las MACs de la lista blanca y se eliminarán sus reservas DHCP. ¿Continuar?"/>
+                </header>
+                <field name="name"/>
+                <field name="mac"/>
+                <field name="ip_address"/>
+                <field name="partner_id" optional="show"/>
+                <field name="profile_id" optional="hide"/>
+                <field name="unifi_ok" optional="show"/>
+                <field name="mikrotik_ok" optional="show"/>
+                <field name="is_random_mac" optional="hide"/>
+                <field name="provisioned_date" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'active'"
+                       decoration-danger="state == 'error'" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wifi_access_device_form" model="ir.ui.view">
+        <field name="name">wifi.access.device.form</field>
+        <field name="model">wifi.access.device</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_provision" type="object" string="Dar de alta" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_retry" type="object" string="Reintentar" class="btn-primary"
+                            invisible="state != 'error'"/>
+                    <button name="action_check" type="object" string="Verificar" invisible="state == 'draft'"/>
+                    <button name="action_deprovision" type="object" string="Dar de baja"
+                            invisible="state not in ('active', 'error')"
+                            confirm="Se quitará la MAC de la lista blanca y se eliminará la reserva DHCP. ¿Continuar?"/>
+                    <button name="action_reset_draft" type="object" string="Volver a borrador"
+                            invisible="state != 'removed'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,removed"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-danger" role="alert" invisible="state != 'error'">
+                        <strong>Falló la <field name="pending_action" class="d-inline" readonly="1"/>:</strong>
+                        <field name="last_error" class="d-inline"/>
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="not is_random_mac">
+                        Esta MAC parece aleatoria ("dirección privada"). Desactive esa opción en el equipo
+                        para esta red; si no, la MAC puede cambiar y el equipo dejará de conectarse.
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Ej.: Notebook Prof. García"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="mac" placeholder="aa:bb:cc:dd:ee:ff" readonly="state not in ('draft', 'removed')"/>
+                            <field name="profile_id" readonly="state not in ('draft', 'removed')"/>
+                            <field name="ip_address" placeholder="Automática" readonly="state != 'draft'"/>
+                            <field name="partner_id"/>
+                            <field name="ref"/>
+                        </group>
+                        <group>
+                            <field name="unifi_ok"/>
+                            <field name="mikrotik_ok"/>
+                            <field name="provisioned_date"/>
+                            <field name="removed_date" invisible="not removed_date"/>
+                            <field name="last_check"/>
+                            <field name="is_random_mac" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notas" name="notes">
+                            <field name="notes" placeholder="Observaciones..."/>
+                        </page>
+                        <page string="Técnico" name="technical" groups="wifi_access_provisioning.group_wifi_manager">
+                            <group>
+                                <field name="lease_ref"/>
+                                <field name="queue_ref"/>
+                                <field name="pending_action"/>
+                                <field name="imported"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_wifi_access_device_search" model="ir.ui.view">
+        <field name="name">wifi.access.device.search</field>
+        <field name="model">wifi.access.device</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="mac"/>
+                <field name="ip_address"/>
+                <field name="partner_id"/>
+                <field name="ref"/>
+                <filter name="draft" string="Borrador" domain="[('state', '=', 'draft')]"/>
+                <filter name="active_dev" string="Activos" domain="[('state', '=', 'active')]"/>
+                <filter name="error" string="Con error" domain="[('state', '=', 'error')]"/>
+                <filter name="removed" string="Dados de baja" domain="[('state', '=', 'removed')]"/>
+                <filter name="not_removed" string="Vigentes" domain="[('state', '!=', 'removed')]"/>
+                <separator/>
+                <filter name="random" string="MAC aleatoria" domain="[('is_random_mac', '=', True)]"/>
+                <filter name="no_lease" string="Sin reserva DHCP" domain="[('state', '=', 'active'), ('mikrotik_ok', '=', False)]"/>
+                <filter name="no_unifi" string="Fuera de la lista blanca" domain="[('state', '=', 'active'), ('unifi_ok', '=', False)]"/>
+                <filter name="imported" string="Importados" domain="[('imported', '=', True)]"/>
+                <group>
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+                    <filter name="group_profile" string="Perfil" context="{'group_by': 'profile_id'}"/>
+                    <filter name="group_partner" string="Responsable" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_wifi_access_device" model="ir.actions.act_window">
+        <field name="name">Dispositivos</field>
+        <field name="res_model">wifi.access.device</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_not_removed': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Cargue el primer dispositivo</p>
+            <p>Ingrese la MAC y una descripción, y presione "Dar de alta": se agrega a la lista blanca
+               de UniFi y se crea la reserva con IP fija en MikroTik.</p>
+        </field>
+    </record>
+</odoo>
