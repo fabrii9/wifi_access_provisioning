@@ -164,3 +164,8 @@ class RouterOSApi:
 
     def remove(self, path, item_id):
         self._talk([path.rstrip('/') + '/remove', '=.id=' + item_id])
+
+    def call(self, command, **attrs):
+        """Ejecuta un comando arbitrario (p. ej. /ping, /interface/monitor-traffic) y devuelve los !re."""
+        words = [command] + ['=%s=%s' % (k.replace('_', '-'), v) for k, v in attrs.items()]
+        return self._talk(words)[0]

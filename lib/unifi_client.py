@@ -101,3 +101,11 @@ class UnifiClient:
 
     def list_known_clients(self):
         return self._request('GET', '/rest/user')
+
+    def list_active_clients(self):
+        """Clientes conectados ahora: AP, SSID, canal, señal, velocidades y bytes acumulados."""
+        return self._request('GET', '/stat/sta')
+
+    def list_devices_basic(self):
+        """Equipos UniFi (APs, switches) con MAC y nombre."""
+        return self._request('GET', '/stat/device-basic')

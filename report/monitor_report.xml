@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_wifi_monitor" model="ir.actions.report">
+        <field name="name">Informe de seguimiento</field>
+        <field name="model">wifi.monitor</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wifi_access_provisioning.report_wifi_monitor</field>
+        <field name="report_file">wifi_access_provisioning.report_wifi_monitor</field>
+        <field name="print_report_name">'Seguimiento - %s' % object.name</field>
+        <field name="binding_model_id" ref="model_wifi_monitor"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_wifi_monitor">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="p" t-value="payloads[o.id]"/>
+                    <div class="page" style="font-size: 11px;">
+                        <style>
+                            .wm-ok { color: #15803d; }
+                            .wm-warn { color: #b45309; }
+                            .wm-bad { color: #b91c1c; font-weight: bold; }
+                            .wm-chart { margin: 4px 0 10px 0; page-break-inside: avoid; }
+                            .wm-target { page-break-inside: avoid; }
+                            .wm-table td, .wm-table th { padding: 2px 6px; }
+                        </style>
+                        <h3>Seguimiento: <t t-out="o.name"/></h3>
+                        <p>
+                            <t t-if="o.partner_id">Reclamó: <b t-out="o.partner_id.name"/> · </t>
+                            Equipos: <t t-out="', '.join('%s (%s)' % (t.name, t.mac) for t in o.target_ids)"/><br/>
+                            Muestra cada <t t-out="o.interval"/> min · enlace <t t-out="o.wan_interface"/>
+                            (<t t-out="o.wan_down_mbps"/>/<t t-out="o.wan_up_mbps"/> Mbps contratados)
+                        </p>
+                        <p t-if="o.notes" t-out="o.notes" style="white-space: pre-line;"/>
+
+                        <t t-foreach="p['days']" t-as="d">
+                            <div t-att-style="'page-break-before: always;' if not d_first else ''">
+                                <h4 style="border-bottom: 1px solid #d1d5db;" t-out="d['label']"/>
+
+                                <h5>Enlace a internet</h5>
+                                <ul>
+                                    <li t-foreach="d['context_diagnosis']" t-as="dg" t-att-class="'wm-%s' % dg[0]" t-out="dg[1]"/>
+                                </ul>
+                                <div class="wm-chart" t-out="d['wan_chart']"/>
+                                <div class="wm-chart" t-if="d['inet_chart']" t-out="d['inet_chart']"/>
+
+                                <t t-foreach="d['targets']" t-as="t">
+                                    <t t-set="s" t-value="t['stats']"/>
+                                    <div class="wm-target">
+                                        <h5>
+                                            <t t-out="t['target'].name"/>
+                                            <small class="text-muted"> · <t t-out="t['target'].mac"/></small>
+                                        </h5>
+                                        <ul>
+                                            <li t-foreach="t['diagnosis']" t-as="dg" t-att-class="'wm-%s' % dg[0]" t-out="dg[1]"/>
+                                        </ul>
+                                        <table class="table table-sm wm-table">
+                                            <tr>
+                                                <th>Muestras</th><th>Conectado</th><th>Señal (mediana)</th><th>AP</th>
+                                                <th>Ping (mediana / peor 10%)</th><th>Pérdida</th><th>Consumo pico</th><th>Total</th>
+                                            </tr>
+                                            <tr>
+                                                <td t-out="s['count']"/>
+                                                <td><t t-out="'%.0f' % s['online_pct']"/>%</td>
+                                                <td><t t-if="s['signal_median'] is not None"><t t-out="'%.0f' % s['signal_median']"/> dBm</t><t t-else="">—</t></td>
+                                                <td t-out="', '.join(s['aps']) or '—'"/>
+                                                <td><t t-if="s['ping_median'] is not None"><t t-out="'%.1f / %.1f ms' % (s['ping_median'], s['ping_p90'])"/></t><t t-else="">—</t></td>
+                                                <td><t t-if="s['loss_avg'] is not None"><t t-out="'%.0f' % s['loss_avg']"/>%</t><t t-else="">—</t></td>
+                                                <td><t t-if="s['down_peak'] is not None"><t t-out="'↓%.1f ↑%.1f Mbps' % (s['down_peak'], s['up_peak'] or 0)"/></t><t t-else="">—</t></td>
+                                                <td><t t-out="'↓%.0f ↑%.0f MB' % (s['down_mb'], s['up_mb'])"/></td>
+                                            </tr>
+                                        </table>
+                                        <div class="wm-chart" t-foreach="t['charts']" t-as="chart" t-out="chart"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                        <p class="text-muted" style="margin-top: 12px;">
+                            Señal: por encima de -60 dBm es buena; por debajo de -70 dBm es inestable.
+                            El ping se mide desde el router hasta el equipo, así que refleja la red local y el WiFi,
+                            no internet. Las franjas rojas son momentos en que el equipo no estaba conectado al WiFi;
+                            las naranjas, momentos con el enlace a internet saturado.
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

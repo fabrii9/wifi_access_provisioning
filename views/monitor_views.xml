@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Seguimientos -->
+    <record id="view_wifi_monitor_list" model="ir.ui.view">
+        <field name="name">wifi.monitor.list</field>
+        <field name="model">wifi.monitor</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'" decoration-muted="state == 'done'">
+                <field name="name"/>
+                <field name="partner_id" optional="show"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="hour_from" widget="float_time"/>
+                <field name="hour_to" widget="float_time"/>
+                <field name="last_sample_at" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'running'"
+                       decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wifi_monitor_form" model="ir.ui.view">
+        <field name="name">wifi.monitor.form</field>
+        <field name="model">wifi.monitor</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_start" type="object" string="Iniciar" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_collect_now" type="object" string="Tomar muestra ahora"
+                            invisible="state == 'done'"/>
+                    <button name="action_print_report" type="object" string="Ver informe"
+                            invisible="sample_count == 0"/>
+                    <button name="action_send_report" type="object" string="Enviar informe"
+                            invisible="sample_count == 0"/>
+                    <button name="action_stop" type="object" string="Finalizar" invisible="state != 'running'"
+                            confirm="Se dejará de tomar muestras. ¿Continuar?"/>
+                    <button name="action_reset_draft" type="object" string="Volver a borrador"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_samples" type="object" class="oe_stat_button" icon="fa-line-chart">
+                            <field name="sample_count" widget="statinfo" string="Muestras"/>
+                        </button>
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="not last_error">
+                        <strong>La última lectura tuvo errores:</strong>
+                        <field name="last_error" class="d-inline"/>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Ej.: Cortes de 11 a 13 en secretaría"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="recipient_ids" widget="many2many_tags"/>
+                            <field name="report_mode"/>
+                        </group>
+                        <group>
+                            <field name="last_sample_at"/>
+                            <field name="last_report_date" invisible="report_mode != 'daily'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Equipos" name="targets">
+                            <field name="target_ids">
+                                <list editable="bottom">
+                                    <field name="device_id" options="{'no_create': True}"/>
+                                    <field name="name"/>
+                                    <field name="mac"/>
+                                    <field name="last_ip"/>
+                                    <field name="online"/>
+                                    <field name="last_ap"/>
+                                    <field name="last_signal"/>
+                                    <field name="last_seen_at"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Programación" name="schedule">
+                            <group>
+                                <group string="Días">
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <label for="mon" string="Días de la semana"/>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <span><field name="mon" nolabel="1"/> Lun</span>
+                                        <span><field name="tue" nolabel="1"/> Mar</span>
+                                        <span><field name="wed" nolabel="1"/> Mié</span>
+                                        <span><field name="thu" nolabel="1"/> Jue</span>
+                                        <span><field name="fri" nolabel="1"/> Vie</span>
+                                        <span><field name="sat" nolabel="1"/> Sáb</span>
+                                        <span><field name="sun" nolabel="1"/> Dom</span>
+                                    </div>
+                                </group>
+                                <group string="Horario">
+                                    <field name="hour_from" widget="float_time"/>
+                                    <field name="hour_to" widget="float_time"/>
+                                    <field name="interval"/>
+                                    <field name="tz"/>
+                                </group>
+                            </group>
+                            <p class="text-muted">
+                                Conviene tomar un margen antes y después del horario del reclamo, para comparar
+                                cómo anda el equipo cuando no hay problemas.
+                            </p>
+                        </page>
+                        <page string="Fuentes" name="sources">
+                            <group>
+                                <group string="Equipos">
+                                    <field name="controller_id"/>
+                                    <field name="router_id"/>
+                                </group>
+                                <group string="Enlace a internet">
+                                    <field name="wan_interface"/>
+                                    <field name="wan_down_mbps"/>
+                                    <field name="wan_up_mbps"/>
+                                    <field name="inet_ping_host"/>
+                                </group>
+                            </group>
+                            <p class="text-muted">
+                                El usuario del router necesita también el permiso <code>test</code> para hacer ping.
+                            </p>
+                        </page>
+                        <page string="Notas" name="notes">
+                            <field name="notes" placeholder="Qué se reclamó, qué se probó, conclusiones..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_wifi_monitor_search" model="ir.ui.view">
+        <field name="name">wifi.monitor.search</field>
+        <field name="model">wifi.monitor</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="target_ids" string="Equipo / MAC" filter_domain="['|', ('target_ids.name', 'ilike', self), ('target_ids.mac', 'ilike', self)]"/>
+                <filter name="running" string="En curso" domain="[('state', '=', 'running')]"/>
+                <filter name="draft" string="Borrador" domain="[('state', '=', 'draft')]"/>
+                <filter name="done" string="Finalizados" domain="[('state', '=', 'done')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_wifi_monitor" model="ir.actions.act_window">
+        <field name="name">Seguimientos</field>
+        <field name="res_model">wifi.monitor</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Cree el primer seguimiento</p>
+            <p>Cargue los equipos del reclamo (o selecciónelos en Dispositivos → Acción → Hacer seguimiento),
+               el horario a vigilar y a quién enviar el informe. Se miden señal, AP, latencia y consumo
+               de cada equipo, y la ocupación del enlace a internet.</p>
+        </field>
+    </record>
+
+    <!-- Muestras -->
+    <record id="view_wifi_monitor_sample_list" model="ir.ui.view">
+        <field name="name">wifi.monitor.sample.list</field>
+        <field name="model">wifi.monitor.sample</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" decoration-danger="not online" decoration-muted="unifi_error">
+                <field name="timestamp"/>
+                <field name="target_id"/>
+                <field name="online"/>
+                <field name="ap_name"/>
+                <field name="essid" optional="hide"/>
+                <field name="channel" optional="hide"/>
+                <field name="signal"/>
+                <field name="satisfaction" optional="hide"/>
+                <field name="link_down_mbps" optional="hide"/>
+                <field name="ping_ms"/>
+                <field name="ping_loss"/>
+                <field name="down_mbps"/>
+                <field name="up_mbps"/>
+                <field name="ip" optional="hide"/>
+                <field name="unifi_error" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wifi_monitor_sample_graph" model="ir.ui.view">
+        <field name="name">wifi.monitor.sample.graph</field>
+        <field name="model">wifi.monitor.sample</field>
+        <field name="arch" type="xml">
+            <graph type="line" sample="0">
+                <field name="timestamp" interval="hour"/>
+                <field name="target_id"/>
+                <field name="signal" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_wifi_monitor_sample_pivot" model="ir.ui.view">
+        <field name="name">wifi.monitor.sample.pivot</field>
+        <field name="model">wifi.monitor.sample</field>
+        <field name="arch" type="xml">
+            <pivot sample="0">
+                <field name="target_id" type="row"/>
+                <field name="timestamp" interval="hour" type="col"/>
+                <field name="signal" type="measure"/>
+                <field name="ping_ms" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_wifi_monitor_sample_search" model="ir.ui.view">
+        <field name="name">wifi.monitor.sample.search</field>
+        <field name="model">wifi.monitor.sample</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="target_id"/>
+                <field name="ap_name"/>
+                <filter name="offline" string="Desconectado" domain="[('online', '=', False), ('unifi_error', '=', False)]"/>
+                <filter name="weak" string="Señal débil (≤ -70 dBm)" domain="[('online', '=', True), ('signal', '&lt;=', -70)]"/>
+                <filter name="slow" string="Ping alto (≥ 50 ms)" domain="[('ping_done', '=', True), ('ping_ms', '&gt;=', 50)]"/>
+                <filter name="loss" string="Con pérdida" domain="[('ping_loss', '&gt;', 0)]"/>
+                <separator/>
+                <filter name="date" string="Fecha" date="timestamp"/>
+                <group>
+                    <filter name="group_target" string="Equipo" context="{'group_by': 'target_id'}"/>
+                    <filter name="group_ap" string="AP" context="{'group_by': 'ap_name'}"/>
+                    <filter name="group_hour" string="Hora" context="{'group_by': 'timestamp:hour'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_wifi_monitor_sample" model="ir.actions.act_window">
+        <field name="name">Muestras</field>
+        <field name="res_model">wifi.monitor.sample</field>
+        <field name="view_mode">list,graph,pivot</field>
+    </record>
+
+    <!-- Desde Dispositivos: Acción → Hacer seguimiento -->
+    <record id="action_server_new_monitor" model="ir.actions.server">
+        <field name="name">Hacer seguimiento</field>
+        <field name="model_id" ref="model_wifi_access_device"/>
+        <field name="binding_model_id" ref="model_wifi_access_device"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_new_monitor()</field>
+    </record>
+</odoo>

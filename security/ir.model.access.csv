@@ -9,3 +9,11 @@ access_access_profile_user,access profile user,model_wifi_access_profile,group_w
 access_access_profile_manager,access profile manager,model_wifi_access_profile,group_wifi_manager,1,1,1,1
 access_access_device_user,access device user,model_wifi_access_device,group_wifi_user,1,1,1,0
 access_access_device_manager,access device manager,model_wifi_access_device,group_wifi_manager,1,1,1,1
+access_monitor_user,monitor user,model_wifi_monitor,group_wifi_user,1,1,1,0
+access_monitor_manager,monitor manager,model_wifi_monitor,group_wifi_manager,1,1,1,1
+access_monitor_target_user,monitor target user,model_wifi_monitor_target,group_wifi_user,1,1,1,1
+access_monitor_target_manager,monitor target manager,model_wifi_monitor_target,group_wifi_manager,1,1,1,1
+access_monitor_sample_user,monitor sample user,model_wifi_monitor_sample,group_wifi_user,1,0,0,0
+access_monitor_sample_manager,monitor sample manager,model_wifi_monitor_sample,group_wifi_manager,1,1,1,1
+access_monitor_context_user,monitor context user,model_wifi_monitor_context,group_wifi_user,1,0,0,0
+access_monitor_context_manager,monitor context manager,model_wifi_monitor_context,group_wifi_manager,1,1,1,1

@@ -6,6 +6,8 @@
 
     <menuitem id="menu_wifi_devices" name="Dispositivos" parent="menu_wifi_root" sequence="10"
               action="action_wifi_access_device"/>
+    <menuitem id="menu_wifi_monitors" name="Seguimientos" parent="menu_wifi_root" sequence="20"
+              action="action_wifi_monitor"/>
 
     <menuitem id="menu_wifi_config" name="Configuración" parent="menu_wifi_root" sequence="90"
               groups="wifi_access_provisioning.group_wifi_manager"/>

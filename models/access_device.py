@@ -3,7 +3,7 @@ import logging
 
 from markupsafe import Markup
 
-from odoo import api, fields, models
+from odoo import Command, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
 from ..lib import RouterOSError, UnifiError, is_random_mac, normalize_mac
@@ -281,6 +281,19 @@ class WifiAccessDevice(models.Model):
     def action_reset_draft(self):
         self.filtered(lambda r: r.state == 'removed').write(
             {'state': 'draft', 'ip_address': False, 'unifi_ok': False, 'mikrotik_ok': False})
+
+    def action_new_monitor(self):
+        """Crea un seguimiento en borrador con los dispositivos seleccionados y lo abre."""
+        profile = self[:1].profile_id
+        monitor = self.env['wifi.monitor'].create({
+            'name': ', '.join(self.mapped('name'))[:120],
+            'controller_id': profile.controller_id.id,
+            'router_id': profile.router_id.id,
+            'target_ids': [Command.create({'device_id': d.id, 'name': d.name, 'mac': d.mac,
+                                           'last_ip': d.ip_address}) for d in self],
+        })
+        return {'type': 'ir.actions.act_window', 'res_model': 'wifi.monitor', 'res_id': monitor.id,
+                'view_mode': 'form', 'target': 'current'}
 
     def action_check(self):
         """Lee los equipos y actualiza los indicadores sin modificar nada."""
